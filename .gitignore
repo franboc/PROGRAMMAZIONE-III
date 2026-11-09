@@ -1,0 +1,11 @@
+# Output di compilazione Maven
+target/
+
+# File di configurazione locali di IntelliJ
+.idea/
+*.iml
+out/
+
+# File di sistema
+.DS_Store
+Thumbs.db

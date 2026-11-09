@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+
+<!-- VIEW provvisoria del client: verrà sostituita dalla inbox nei prossimi giorni. -->
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="it.prog3.mailclient.controller.ClientController"
+            prefWidth="800" prefHeight="500">
+    <center>
+        <Label text="Qui comparirà la inbox" style="-fx-text-fill: gray;"/>
+    </center>
+
+    <bottom>
+        <HBox spacing="6">
+            <padding>
+                <Insets top="6" right="10" bottom="6" left="10"/>
+            </padding>
+            <Label text="Stato server:"/>
+            <Label fx:id="statusLabel"/>
+        </HBox>
+    </bottom>
+</BorderPane>
