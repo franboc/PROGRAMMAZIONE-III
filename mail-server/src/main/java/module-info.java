@@ -15,6 +15,7 @@ module it.prog3.mailserver {
     // delle classi che converte in JSON.
     opens it.prog3.mailserver.model to com.google.gson;
     opens it.prog3.mailserver.protocol to com.google.gson;
+    opens it.prog3.mailserver.persistence to com.google.gson;
 
     // JavaFX deve poter istanziare la classe Application.
     exports it.prog3.mailserver;

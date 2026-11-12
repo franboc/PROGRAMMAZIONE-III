@@ -25,12 +25,22 @@ public final class JsonUtil {
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter().nullSafe())
             .create();
 
+    /** Versione "indentata" su più righe: usata per i file, così sono leggibili. */
+    private static final Gson PRETTY_GSON = GSON.newBuilder()
+            .setPrettyPrinting()
+            .create();
+
     private JsonUtil() {
         // classe di sole utility: non si istanzia
     }
 
     public static String toJson(Object obj) {
         return GSON.toJson(obj);
+    }
+
+    /** Da NON usare sul socket: il protocollo richiede una riga sola. */
+    public static String toPrettyJson(Object obj) {
+        return PRETTY_GSON.toJson(obj);
     }
 
     public static <T> T fromJson(String json, Class<T> type) {

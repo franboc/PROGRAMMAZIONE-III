@@ -6,6 +6,10 @@ target/
 *.iml
 out/
 
+# Caselle di posta generate a runtime dal server
+mail-server/data/
+mail-server/data-demo/
+
 # File di sistema
 .DS_Store
 Thumbs.db

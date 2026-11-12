@@ -1,11 +1,15 @@
 package it.prog3.mailserver;
 
 import it.prog3.mailserver.controller.ServerController;
+import it.prog3.mailserver.model.MailboxManager;
 import it.prog3.mailserver.model.ServerModel;
+import it.prog3.mailserver.persistence.MailboxFileStore;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+
+import java.io.IOException;
 
 /**
  * Punto di ingresso del server. Il suo unico compito è "montare" i pezzi MVC:
@@ -27,6 +31,16 @@ public class ServerApp extends Application {
         controller.init(model);
 
         model.addLog("Server avviato");
+
+        // 4. Caricamento delle caselle dai file (verranno usate dal server di rete, Giorno 4)
+        try {
+            MailboxManager mailboxes = new MailboxManager(
+                    ServerConfig.ACCOUNTS, new MailboxFileStore(ServerConfig.DATA_DIR));
+            model.addLog("Caricate " + mailboxes.count() + " caselle da "
+                    + ServerConfig.DATA_DIR.toAbsolutePath());
+        } catch (IOException e) {
+            model.addLog("ERRORE nel caricamento delle caselle: " + e.getMessage());
+        }
 
         stage.setTitle("Mail Server");
         stage.setScene(scene);
