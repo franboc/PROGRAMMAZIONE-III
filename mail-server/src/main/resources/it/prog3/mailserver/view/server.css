@@ -1,0 +1,26 @@
+/* Stile della finestra del server. Le classi log-* vengono assegnate
+   a ogni riga dal LogCell del controller in base alla categoria. */
+
+.title {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.status {
+    -fx-font-weight: bold;
+}
+
+.log-list {
+    -fx-font-family: "Consolas", "Monospaced";
+}
+
+.log-info       { -fx-text-fill: #2e7d32; }                         /* verde */
+.log-connection { -fx-text-fill: #666666; }                         /* grigio */
+.log-operation  { -fx-text-fill: #1a4f9c; }                         /* blu */
+.log-polling    { -fx-text-fill: #a0a0a0; }                         /* grigio chiaro */
+.log-error      { -fx-text-fill: #c62828; -fx-font-weight: bold; }  /* rosso */
+
+/* Riga selezionata: testo bianco, leggibile sullo sfondo blu della selezione */
+.list-cell:filled:selected {
+    -fx-text-fill: white;
+}

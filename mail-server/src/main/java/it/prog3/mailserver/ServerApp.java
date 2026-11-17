@@ -1,6 +1,7 @@
 package it.prog3.mailserver;
 
 import it.prog3.mailserver.controller.ServerController;
+import it.prog3.mailserver.model.LogEntry.Category;
 import it.prog3.mailserver.model.MailboxManager;
 import it.prog3.mailserver.model.ServerModel;
 import it.prog3.mailserver.network.MailServer;
@@ -40,22 +41,24 @@ public class ServerApp extends Application {
         stage.show();
 
         // 4. Caricamento delle caselle e avvio del server di rete.
-        //    Il logger passato alla rete è model::addLog: la rete scrive nel log
-        //    senza sapere che esiste una GUI.
+        //    Alla rete passiamo il model come EventLogger: la rete segnala gli
+        //    eventi senza sapere che esiste una GUI.
         try {
             MailboxManager mailboxes = new MailboxManager(
                     ServerConfig.ACCOUNTS, new MailboxFileStore(ServerConfig.DATA_DIR));
-            model.addLog("Caricate " + mailboxes.count() + " caselle da "
+            model.log(Category.INFO, "Caricate " + mailboxes.count() + " caselle da "
                     + ServerConfig.DATA_DIR.toAbsolutePath());
 
-            RequestProcessor processor = new RequestProcessor(mailboxes, model::addLog);
-            mailServer = new MailServer(ServerConfig.PORT, processor, model::addLog);
+            mailServer = new MailServer(ServerConfig.PORT, new RequestProcessor(mailboxes), model);
             mailServer.start();
+            model.setStatus("in ascolto sulla porta " + ServerConfig.PORT);
         } catch (BindException e) {
-            model.addLog("ERRORE: la porta " + ServerConfig.PORT
+            model.log(Category.ERROR, "La porta " + ServerConfig.PORT
                     + " è già in uso (il server è già aperto in un'altra finestra?)");
+            model.setStatus("NON ATTIVO (porta occupata)");
         } catch (IOException e) {
-            model.addLog("ERRORE all'avvio del server: " + e.getMessage());
+            model.log(Category.ERROR, "Errore all'avvio del server: " + e.getMessage());
+            model.setStatus("NON ATTIVO (errore all'avvio)");
         }
     }
 

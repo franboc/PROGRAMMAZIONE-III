@@ -1,28 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 
 <!-- VIEW del server: descrive SOLO l'aspetto, nessuna logica.
-     fx:controller indica quale classe gestisce questa vista. -->
+     fx:controller indica quale classe gestisce questa vista,
+     stylesheets il file CSS con i colori delle righe del log. -->
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="it.prog3.mailserver.controller.ServerController"
-            prefWidth="700" prefHeight="450">
+            stylesheets="@server.css"
+            prefWidth="800" prefHeight="500">
     <padding>
         <Insets top="10" right="10" bottom="10" left="10"/>
     </padding>
 
     <top>
-        <Label text="Log eventi" style="-fx-font-size: 16; -fx-font-weight: bold;">
+        <HBox spacing="12" alignment="CENTER_LEFT">
             <BorderPane.margin>
                 <Insets bottom="8"/>
             </BorderPane.margin>
-        </Label>
+            <Label text="Log eventi" styleClass="title"/>
+            <!-- Region "elastica": spinge i controlli seguenti a destra -->
+            <Region HBox.hgrow="ALWAYS"/>
+            <CheckBox fx:id="showPollingCheckBox" text="Mostra aggiornamenti senza novità"/>
+            <Button text="Pulisci log" onAction="#onClearLog"/>
+        </HBox>
     </top>
 
     <center>
-        <ListView fx:id="logListView"/>
+        <ListView fx:id="logListView" styleClass="log-list"/>
     </center>
+
+    <bottom>
+        <HBox spacing="6" alignment="CENTER_LEFT">
+            <BorderPane.margin>
+                <Insets top="8"/>
+            </BorderPane.margin>
+            <Label text="Stato:"/>
+            <Label fx:id="statusLabel" styleClass="status"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="countLabel"/>
+        </HBox>
+    </bottom>
 </BorderPane>

@@ -1,6 +1,8 @@
 package it.prog3.mailserver.network;
 
 import it.prog3.mailserver.ServerConfig;
+import it.prog3.mailserver.model.EventLogger;
+import it.prog3.mailserver.model.LogEntry.Category;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -8,7 +10,6 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 /**
  * Il server di rete.
@@ -25,12 +26,12 @@ public class MailServer {
 
     private final int port;
     private final RequestProcessor processor;
-    private final Consumer<String> logger;
+    private final EventLogger logger;
 
     private ServerSocket serverSocket;
     private ExecutorService pool;
 
-    public MailServer(int port, RequestProcessor processor, Consumer<String> logger) {
+    public MailServer(int port, RequestProcessor processor, EventLogger logger) {
         this.port = port;
         this.processor = processor;
         this.logger = logger;
@@ -45,7 +46,7 @@ public class MailServer {
         acceptor.setDaemon(true); // non impedisce alla JVM di terminare
         acceptor.start();
 
-        logger.accept("In ascolto sulla porta " + port);
+        logger.log(Category.INFO, "In ascolto sulla porta " + port);
     }
 
     private void acceptLoop() {
@@ -56,7 +57,7 @@ public class MailServer {
             } catch (IOException e) {
                 // accept() fallisce anche quando chiudiamo il ServerSocket in stop(): in quel caso è normale
                 if (!serverSocket.isClosed()) {
-                    logger.accept("ERRORE nell'accettare una connessione: " + e.getMessage());
+                    logger.log(Category.ERROR, "Errore nell'accettare una connessione: " + e.getMessage());
                 }
             }
         }

@@ -28,6 +28,8 @@ public class TestClient {
                 + "\"recipients\":[\"bob@mail.it\",\"dave@mail.it\"],"
                 + "\"subject\":\"Prova\",\"text\":\"...\"}}");
         send("{\"command\":\"FETCH\",\"user\":\"bob@mail.it\",\"lastId\":0}");
+        // Polling senza novità (nessuna email ha ID > 999999): nel log diventa POLLING
+        send("{\"command\":\"FETCH\",\"user\":\"carol@mail.it\",\"lastId\":999999}");
         send("{\"command\":\"DELETE\",\"user\":\"bob@mail.it\",\"emailId\":999}");
         send("questo non è JSON");
     }

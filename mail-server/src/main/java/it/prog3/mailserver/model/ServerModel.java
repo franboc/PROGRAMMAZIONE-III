@@ -1,38 +1,71 @@
 package it.prog3.mailserver.model;
 
 import javafx.application.Platform;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 /**
- * Model del server. Per ora contiene solo il log degli eventi.
+ * Model della GUI del server: il log degli eventi e lo stato del server.
  *
- * Il log è una ObservableList: chi la "osserva" (la ListView della GUI)
- * viene avvisato automaticamente a ogni modifica. Il model NON conosce
- * la view: si limita a modificare i propri dati (pattern Observer).
+ * Entrambi sono OSSERVABILI (ObservableList e property): la view si aggiorna
+ * da sola quando cambiano, senza che il model sappia che la view esiste.
+ *
+ * REGOLA DI JAVAFX: gli oggetti osservati dalla GUI vanno modificati SOLO dal
+ * JavaFX Application Thread. Gli eventi però arrivano dai thread di rete:
+ * per questo ogni modifica passa da runOnFxThread().
  */
-public class ServerModel {
+public class ServerModel implements EventLogger {
 
-    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm:ss");
+    /** Oltre questo numero di righe le più vecchie vengono scartate (la memoria non cresce all'infinito). */
+    private static final int MAX_LOG_SIZE = 5000;
 
-    private final ObservableList<String> log = FXCollections.observableArrayList();
+    private final ObservableList<LogEntry> log = FXCollections.observableArrayList();
+    private final ReadOnlyStringWrapper status = new ReadOnlyStringWrapper("Server non attivo");
 
-    public ObservableList<String> getLog() {
-        return log;
+    /** La lista è osservabile ma la view la usa solo in lettura. */
+    public ObservableList<LogEntry> getLog() {
+        return FXCollections.unmodifiableObservableList(log);
+    }
+
+    /** Versione "sola lettura" della property: la view può osservarla, non modificarla. */
+    public ReadOnlyStringProperty statusProperty() {
+        return status.getReadOnlyProperty();
+    }
+
+    /** Può essere chiamato da QUALSIASI thread. */
+    @Override
+    public void log(LogEntry.Category category, String message) {
+        // L'orario si prende SUBITO (momento dell'evento), non quando la GUI lo mostra
+        LogEntry entry = new LogEntry(LocalTime.now(), category, message);
+        runOnFxThread(() -> {
+            log.add(entry);
+            if (log.size() > MAX_LOG_SIZE) {
+                log.remove(0, log.size() - MAX_LOG_SIZE);
+            }
+        });
+    }
+
+    public void setStatus(String text) {
+        runOnFxThread(() -> status.set(text));
+    }
+
+    public void clearLog() {
+        runOnFxThread(log::clear);
     }
 
     /**
-     * Aggiunge un evento al log. Può essere chiamato da QUALSIASI thread.
-     *
-     * La lista è osservata dalla GUI, e la GUI di JavaFX si può modificare solo
-     * dal suo thread (JavaFX Application Thread). Platform.runLater mette la
-     * modifica in coda e la fa eseguire a quel thread appena possibile.
+     * Se siamo già nel thread di JavaFX esegue subito; altrimenti mette il
+     * compito in coda con Platform.runLater e lo farà eseguire a quel thread.
      */
-    public void addLog(String message) {
-        String line = "[" + LocalTime.now().format(TIME) + "] " + message;
-        Platform.runLater(() -> log.add(line));
+    private static void runOnFxThread(Runnable action) {
+        if (Platform.isFxApplicationThread()) {
+            action.run();
+        } else {
+            Platform.runLater(action);
+        }
     }
 }
