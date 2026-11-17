@@ -14,6 +14,7 @@ Ogni cartella è un progetto Maven indipendente, da aprire separatamente in Inte
 
 ## Protocollo di comunicazione
 
+Il server è in ascolto sulla porta TCP **4444**.
 Ogni operazione apre una nuova connessione TCP (come HTTP): il client invia
 **una riga** di testo JSON con la richiesta, il server risponde con **una riga**
 JSON e chiude la connessione.

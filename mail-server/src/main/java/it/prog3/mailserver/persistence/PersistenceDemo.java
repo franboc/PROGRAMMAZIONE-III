@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 /**
- * Programma di prova del Giorno 3 (lo cancelleremo al Giorno 4).
+ * Programma di prova della persistenza e dei lock (utile anche da mostrare all'esame).
  * Usa una cartella separata (data-demo) per non sporcare le caselle vere.
  */
 public class PersistenceDemo {

@@ -23,6 +23,7 @@ public final class JsonUtil {
 
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter().nullSafe())
+            .disableHtmlEscaping() // scrive caratteri come l'apostrofo così come sono, senza codificarli
             .create();
 
     private JsonUtil() {

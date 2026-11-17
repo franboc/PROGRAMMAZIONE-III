@@ -8,6 +8,19 @@ import java.util.List;
  */
 public final class ServerConfig {
 
+    /** Porta TCP su cui il server accetta le connessioni dei client. */
+    public static final int PORT = 4444;
+
+    /**
+     * Numero di thread che gestiscono le richieste in parallelo.
+     * Le richieste in più aspettano in coda: il server non crea mai thread
+     * senza limite, anche se arrivano moltissime connessioni insieme.
+     */
+    public static final int THREAD_POOL_SIZE = 10;
+
+    /** Tempo massimo di attesa della richiesta da un client (millisecondi). */
+    public static final int READ_TIMEOUT_MS = 5000;
+
     /** Cartella in cui vengono salvate le caselle (relativa alla cartella mail-server). */
     public static final Path DATA_DIR = Path.of("data");
 
