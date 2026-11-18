@@ -1,29 +1,48 @@
 package it.prog3.mailclient.model;
 
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 
 /**
- * Model del client. Per ora contiene solo lo stato della connessione.
+ * Model del client: i dati che il client mantiene durante l'esecuzione.
  *
- * Una StringProperty è un valore "osservabile": chi è collegato tramite binding
- * vede ogni cambiamento in automatico. È l'equivalente moderno di
- * Observable/Observer (classi deprecate che la traccia vieta).
+ *  - userEmail: l'indirizzo dell'utente, che lo identifica per tutta la sessione
+ *  - connected: se l'ultima comunicazione con il server è andata a buon fine
+ *  (dal Giorno 7: anche la inbox)
+ *
+ * Le property sono esposte in SOLA LETTURA: la view può osservarle (binding)
+ * ma non modificarle. Le modifiche passano dai metodi set..., chiamati dai controller.
+ *
+ * I setter vanno chiamati dal thread di JavaFX, perché la GUI osserva queste property.
  */
 public class ClientModel {
 
-    private final StringProperty connectionStatus = new SimpleStringProperty("Non connesso");
+    private final ReadOnlyStringWrapper userEmail = new ReadOnlyStringWrapper("");
+    private final ReadOnlyBooleanWrapper connected = new ReadOnlyBooleanWrapper(false);
 
-    // Convenzione JavaFX: getter della property + getter/setter del valore
-    public StringProperty connectionStatusProperty() {
-        return connectionStatus;
+    public ReadOnlyStringProperty userEmailProperty() {
+        return userEmail.getReadOnlyProperty();
     }
 
-    public String getConnectionStatus() {
-        return connectionStatus.get();
+    public String getUserEmail() {
+        return userEmail.get();
     }
 
-    public void setConnectionStatus(String status) {
-        connectionStatus.set(status);
+    public void setUserEmail(String email) {
+        userEmail.set(email);
+    }
+
+    public ReadOnlyBooleanProperty connectedProperty() {
+        return connected.getReadOnlyProperty();
+    }
+
+    public boolean isConnected() {
+        return connected.get();
+    }
+
+    public void setConnected(boolean value) {
+        connected.set(value);
     }
 }

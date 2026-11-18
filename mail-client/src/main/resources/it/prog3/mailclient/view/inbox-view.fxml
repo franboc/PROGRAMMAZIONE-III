@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.shape.Circle?>
+
+<!-- Finestra principale del client. Per ora mostra solo utente e stato:
+     la inbox verrà aggiunta al Giorno 7. -->
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="it.prog3.mailclient.controller.InboxController"
+            stylesheets="@client.css"
+            prefWidth="900" prefHeight="560">
+    <top>
+        <HBox spacing="6" alignment="CENTER_LEFT" styleClass="top-bar">
+            <padding>
+                <Insets top="8" right="12" bottom="8" left="12"/>
+            </padding>
+            <Label text="Utente:"/>
+            <Label fx:id="userLabel" styleClass="bold"/>
+        </HBox>
+    </top>
+
+    <center>
+        <Label text="Qui comparirà la inbox (Giorno 7)" styleClass="placeholder"/>
+    </center>
+
+    <bottom>
+        <HBox spacing="6" alignment="CENTER_LEFT" styleClass="status-bar">
+            <padding>
+                <Insets top="6" right="12" bottom="6" left="12"/>
+            </padding>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Circle fx:id="statusDot" radius="5"/>
+            <Label fx:id="statusLabel"/>
+        </HBox>
+    </bottom>
+</BorderPane>

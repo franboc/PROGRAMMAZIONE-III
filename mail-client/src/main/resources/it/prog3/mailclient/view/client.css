@@ -1,0 +1,34 @@
+/* Stile delle finestre del client. */
+
+.title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.bold {
+    -fx-font-weight: bold;
+}
+
+.placeholder {
+    -fx-text-fill: gray;
+}
+
+.error-label {
+    -fx-text-fill: #c62828;
+}
+
+/* Campo con indirizzo malformato: bordo rosso (classe aggiunta dal LoginController) */
+.text-field.invalid {
+    -fx-text-box-border: #c62828;
+    -fx-focus-color: #c62828;
+}
+
+.top-bar {
+    -fx-background-color: #eef2f7;
+    -fx-border-color: transparent transparent #d0d7e2 transparent;
+}
+
+.status-bar {
+    -fx-background-color: #f4f4f4;
+    -fx-border-color: #d0d0d0 transparent transparent transparent;
+}
