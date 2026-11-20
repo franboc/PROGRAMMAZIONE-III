@@ -2,13 +2,20 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Circle?>
 
-<!-- Finestra principale del client. Per ora mostra solo utente e stato:
-     la inbox verrà aggiunta al Giorno 7. -->
+<!-- Finestra principale del client: a sinistra la lista delle email, a destra il dettaglio. -->
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="it.prog3.mailclient.controller.InboxController"
             stylesheets="@client.css"
@@ -20,11 +27,58 @@
             </padding>
             <Label text="Utente:"/>
             <Label fx:id="userLabel" styleClass="bold"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <!-- Notifica dei nuovi messaggi: compare per qualche secondo -->
+            <Label fx:id="notificationLabel" styleClass="notification"/>
         </HBox>
     </top>
 
     <center>
-        <Label text="Qui comparirà la inbox (Giorno 7)" styleClass="placeholder"/>
+        <SplitPane dividerPositions="0.38">
+            <!-- Sinistra: lista delle email -->
+            <VBox spacing="6" minWidth="260">
+                <padding>
+                    <Insets top="8" right="8" bottom="8" left="8"/>
+                </padding>
+                <HBox spacing="8" alignment="BASELINE_LEFT">
+                    <Label text="Posta in arrivo" styleClass="section-title"/>
+                    <Label fx:id="unreadLabel" styleClass="unread-count"/>
+                </HBox>
+                <ListView fx:id="emailList" VBox.vgrow="ALWAYS">
+                    <placeholder>
+                        <Label text="Nessun messaggio" styleClass="placeholder"/>
+                    </placeholder>
+                </ListView>
+            </VBox>
+
+            <!-- Destra: dettaglio. StackPane = i due figli sono sovrapposti,
+                 se ne vede uno alla volta (visibilità legata alla selezione). -->
+            <StackPane>
+                <Label fx:id="noSelectionLabel" text="Seleziona un'email per leggerla" styleClass="placeholder"/>
+
+                <VBox fx:id="detailBox" spacing="10">
+                    <padding>
+                        <Insets top="12" right="14" bottom="12" left="14"/>
+                    </padding>
+                    <Label fx:id="subjectLabel" styleClass="detail-subject" wrapText="true"/>
+                    <GridPane hgap="10" vgap="4">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="40"/>
+                            <ColumnConstraints hgrow="ALWAYS"/>
+                        </columnConstraints>
+                        <Label text="Da:" styleClass="bold" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <Label fx:id="fromLabel" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+                        <Label text="A:" styleClass="bold" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <Label fx:id="toLabel" wrapText="true" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <Label text="Data:" styleClass="bold" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                        <Label fx:id="dateLabel" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                    </GridPane>
+                    <Separator/>
+                    <!-- TextArea in sola lettura: si può selezionare e copiare il testo -->
+                    <TextArea fx:id="bodyArea" editable="false" wrapText="true" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </StackPane>
+        </SplitPane>
     </center>
 
     <bottom>

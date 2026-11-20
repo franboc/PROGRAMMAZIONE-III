@@ -23,6 +23,7 @@ public class ClientApp extends Application {
     private Stage stage;
     private ClientModel model;
     private ServerConnection connection;
+    private InboxController inboxController; // null finché l'utente non ha fatto login
 
     /**
      * Thread in background per le operazioni di rete. Sono thread "daemon":
@@ -54,8 +55,9 @@ public class ClientApp extends Application {
 
     private void showInbox() {
         FXMLLoader loader = load("view/inbox-view.fxml");
-        InboxController controller = loader.getController();
-        controller.init(model);
+        inboxController = loader.getController();
+        // init avvia anche il polling: da qui il client chiede le email al server ogni pochi secondi
+        inboxController.init(model, connection);
         stage.setTitle("Mail Client - " + model.getUserEmail());
         stage.centerOnScreen();
     }
@@ -73,6 +75,9 @@ public class ClientApp extends Application {
 
     @Override
     public void stop() {
+        if (inboxController != null) {
+            inboxController.shutdown(); // ferma il polling
+        }
         backgroundExecutor.shutdownNow();
     }
 

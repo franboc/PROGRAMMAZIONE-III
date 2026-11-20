@@ -15,6 +15,9 @@ public final class ClientConfig {
     /** Tempo massimo di attesa della risposta del server (millisecondi). */
     public static final int READ_TIMEOUT_MS = 5000;
 
+    /** Ogni quanti secondi la inbox chiede al server se ci sono email nuove. */
+    public static final int POLL_INTERVAL_SECONDS = 3;
+
     private ClientConfig() {
     }
 }
