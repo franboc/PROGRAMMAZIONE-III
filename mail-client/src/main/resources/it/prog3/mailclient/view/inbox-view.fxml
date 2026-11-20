@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -21,16 +23,28 @@
             stylesheets="@client.css"
             prefWidth="900" prefHeight="560">
     <top>
-        <HBox spacing="6" alignment="CENTER_LEFT" styleClass="top-bar">
-            <padding>
-                <Insets top="8" right="12" bottom="8" left="12"/>
-            </padding>
-            <Label text="Utente:"/>
-            <Label fx:id="userLabel" styleClass="bold"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <!-- Notifica dei nuovi messaggi: compare per qualche secondo -->
-            <Label fx:id="notificationLabel" styleClass="notification"/>
-        </HBox>
+        <VBox>
+            <HBox spacing="6" alignment="CENTER_LEFT" styleClass="top-bar">
+                <padding>
+                    <Insets top="8" right="12" bottom="8" left="12"/>
+                </padding>
+                <Label text="Utente:"/>
+                <Label fx:id="userLabel" styleClass="bold"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <!-- Notifiche (nuovi messaggi, invio riuscito...): compaiono per qualche secondo -->
+                <Label fx:id="notificationLabel" styleClass="notification"/>
+            </HBox>
+            <!-- Azioni: rispondi/inoltra/elimina sono disattivati senza un'email selezionata -->
+            <ToolBar>
+                <Button text="Nuovo messaggio" onAction="#onNew" styleClass="primary"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="replyButton" text="Rispondi" onAction="#onReply"/>
+                <Button fx:id="replyAllButton" text="Rispondi a tutti" onAction="#onReplyAll"/>
+                <Button fx:id="forwardButton" text="Inoltra" onAction="#onForward"/>
+                <Separator orientation="VERTICAL"/>
+                <Button fx:id="deleteButton" text="Elimina" onAction="#onDelete"/>
+            </ToolBar>
+        </VBox>
     </top>
 
     <center>

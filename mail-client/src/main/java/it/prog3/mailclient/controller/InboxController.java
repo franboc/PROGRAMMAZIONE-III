@@ -1,13 +1,23 @@
 package it.prog3.mailclient.controller;
 
 import it.prog3.mailclient.model.ClientModel;
+import it.prog3.mailclient.model.Draft;
 import it.prog3.mailclient.model.Email;
 import it.prog3.mailclient.network.InboxPoller;
 import it.prog3.mailclient.network.ServerConnection;
+import it.prog3.mailclient.protocol.Request;
+import it.prog3.mailclient.protocol.Response;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -24,10 +34,14 @@ import javafx.util.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 
 /**
  * Controller della finestra principale: lista delle email, dettaglio del messaggio
- * selezionato, notifica dei nuovi arrivi e stato della connessione.
+ * selezionato, notifica dei nuovi arrivi, stato della connessione e azioni
+ * (nuovo, rispondi, rispondi a tutti, inoltra, elimina).
  *
  * I dati arrivano dal server tramite l'InboxPoller (thread in background);
  * qui li passiamo al thread della GUI con Platform.runLater e li mettiamo nel model.
@@ -68,14 +82,45 @@ public class InboxController {
     @FXML
     private TextArea bodyArea;
 
+    // Barra delle azioni
+    @FXML
+    private Button replyButton;
+    @FXML
+    private Button replyAllButton;
+    @FXML
+    private Button forwardButton;
+    @FXML
+    private Button deleteButton;
+
     private ClientModel model;
+    private ServerConnection connection;
+    private Executor executor;
+    private Consumer<Draft> openCompose;
     private InboxPoller poller;
+
+    /** true mentre una cancellazione è in corso: evita di premere "Elimina" due volte. */
+    private final BooleanProperty deleting = new SimpleBooleanProperty(false);
 
     /** Nasconde la notifica dopo qualche secondo. Una sola istanza: un nuovo arrivo la fa ripartire. */
     private final PauseTransition hideNotification = new PauseTransition(Duration.seconds(6));
 
-    public void init(ClientModel model, ServerConnection connection) {
+    /**
+     * @param executor    dove eseguire le operazioni di rete (thread in background)
+     * @param openCompose apre la finestra di composizione con la bozza indicata (lo decide ClientApp)
+     */
+    public void init(ClientModel model, ServerConnection connection, Executor executor, Consumer<Draft> openCompose) {
         this.model = model;
+        this.connection = connection;
+        this.executor = executor;
+        this.openCompose = openCompose;
+
+        // ---------- azioni ----------
+        // Rispondi, inoltra ed elimina hanno senso solo con un'email selezionata
+        BooleanBinding noSelection = emailList.getSelectionModel().selectedItemProperty().isNull();
+        replyButton.disableProperty().bind(noSelection);
+        replyAllButton.disableProperty().bind(noSelection);
+        forwardButton.disableProperty().bind(noSelection);
+        deleteButton.disableProperty().bind(noSelection.or(deleting));
 
         // ---------- barra superiore e barra di stato ----------
         userLabel.textProperty().bind(model.userEmailProperty());
@@ -142,9 +187,92 @@ public class InboxController {
     }
 
     private void notifyNewEmails(int count) {
-        notificationLabel.setText(count == 1 ? "Hai 1 nuovo messaggio" : "Hai " + count + " nuovi messaggi");
+        showBanner(count == 1 ? "Hai 1 nuovo messaggio" : "Hai " + count + " nuovi messaggi");
+    }
+
+    /** Mostra un messaggio nella barra superiore per qualche secondo. */
+    public void showBanner(String text) {
+        notificationLabel.setText(text);
         notificationLabel.setVisible(true);
         hideNotification.playFromStart();
+    }
+
+    // ---------- azioni (bottoni della barra) ----------
+
+    @FXML
+    private void onNew() {
+        openCompose.accept(Draft.empty());
+    }
+
+    @FXML
+    private void onReply() {
+        openCompose.accept(Draft.reply(selected()));
+    }
+
+    @FXML
+    private void onReplyAll() {
+        openCompose.accept(Draft.replyAll(selected(), model.getUserEmail()));
+    }
+
+    @FXML
+    private void onForward() {
+        openCompose.accept(Draft.forward(selected()));
+    }
+
+    @FXML
+    private void onDelete() {
+        Email email = selected();
+
+        // Conferma: la cancellazione è definitiva (il server la toglie dal file)
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Eliminare definitivamente il messaggio \"" + subjectOf(email) + "\"?",
+                ButtonType.OK, ButtonType.CANCEL);
+        confirm.setHeaderText(null);
+        confirm.setTitle("Elimina messaggio");
+        confirm.initOwner(emailList.getScene().getWindow());
+        Optional<ButtonType> answer = confirm.showAndWait();
+        if (answer.isEmpty() || answer.get() != ButtonType.OK) {
+            return;
+        }
+
+        deleting.set(true);
+        Task<Response> deleteTask = new Task<>() {
+            @Override
+            protected Response call() throws Exception {
+                return connection.send(Request.delete(model.getUserEmail(), email.getId()));
+            }
+        };
+
+        deleteTask.setOnSucceeded(event -> {
+            deleting.set(false);
+            model.setConnected(true);
+            Response response = deleteTask.getValue();
+            // Si toglie dalla lista SOLO dopo la conferma del server (non prima):
+            // se il server non risponde, l'email deve restare visibile.
+            // "Messaggio non trovato" = era già stata cancellata (es. da un altro client
+            // dello stesso utente): la togliamo comunque, così la lista è coerente col server.
+            model.removeEmail(email);
+            showBanner(response.isOk() ? "Messaggio eliminato" : response.getMessage());
+        });
+
+        deleteTask.setOnFailed(event -> {
+            deleting.set(false);
+            model.setConnected(false);
+            showError("Impossibile contattare il server: il messaggio non è stato eliminato.");
+        });
+
+        executor.execute(deleteTask);
+    }
+
+    private Email selected() {
+        return emailList.getSelectionModel().getSelectedItem();
+    }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, message);
+        alert.setHeaderText(null);
+        alert.initOwner(emailList.getScene().getWindow());
+        alert.show(); // show(), non showAndWait(): non blocca il resto dell'interfaccia
     }
 
     private void showDetail(Email email) {

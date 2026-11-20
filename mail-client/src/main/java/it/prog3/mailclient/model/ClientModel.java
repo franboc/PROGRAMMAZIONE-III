@@ -102,6 +102,19 @@ public class ClientModel {
         return added.size();
     }
 
+    /**
+     * Toglie un'email dalla inbox (dopo che il server ha confermato la cancellazione).
+     *
+     * L'ID resta in knownIds: un'email cancellata non deve mai ricomparire.
+     * In pratica non potrebbe comunque, perché il suo ID è <= lastId del poller.
+     */
+    public void removeEmail(Email email) {
+        inbox.remove(email);
+        if (unread.remove(email.getId())) {
+            unreadCount.set(unread.size());
+        }
+    }
+
     public boolean isUnread(Email email) {
         return unread.contains(email.getId());
     }
